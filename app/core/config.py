@@ -9,11 +9,14 @@ load_dotenv()
 @dataclass
 class Settings:
 
-    database_url : str 
-
+    redis_url : str 
+    cache_ttl : int  
+    task_ttl : int
 
 def get_settings() -> Settings:
 
-    return Settings(os.getenv("DATABASE_URL")
-
+    return Settings(
+        redis_url = os.getenv("REDIS_URL"),
+        cache_ttl = os.getenv("CACHE_TTL"),
+        task_ttl = os.getenv("TASK_TTL")
     )

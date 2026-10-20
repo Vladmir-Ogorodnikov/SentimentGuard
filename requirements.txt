@@ -1,11 +1,7 @@
 # Web framework
 fastapi==0.115.4
 uvicorn[standard]==0.32.0
-
-# Database
-sqlalchemy[asyncio]==2.0.36
-aiosqlite==0.20.0
-alembic==1.13.3
+redis[hiredis]==5.2.0
 
 # Validation & settings
 pydantic==2.9.2
