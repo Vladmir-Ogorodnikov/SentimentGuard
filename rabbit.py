@@ -82,5 +82,10 @@ class RabbitMQ:
 
 
         
+rabbit_client = RabbitMQ()
 
+async def get_rabbit() -> RabbitMQ:
+
+    return rabbit_client 
+ 
              

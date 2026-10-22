@@ -1,6 +1,7 @@
 import redis.asyncio as redis
 import json
 from typing import Optional
+from app.core.config import settings
 
 
 class RedisClient:
@@ -50,8 +51,11 @@ class RedisClient:
         await self.redis.set(key, json.dumps(data), ex = self.task_ttl) 
 
 
+redis_client = RedisClient(redis_url = settings.redis_url, cache_ttl = settings.cache_ttl, task_ttl = settings.task_ttl)
 
+async def get_redis() -> RedisClient:
 
+    return redis_client
 
 
      

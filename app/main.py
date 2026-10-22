@@ -1,29 +1,36 @@
 from fastapi import FastAPI
-from app.redis.client import RedisClient
-from app.core.config import get_settings
+from app.redis.client import redis_client
+from app.core.config import settings
+from rabbit import rabbit_client 
+from app.routers.predictions import prediction_router
 
 
-redis_client : RedisClient
 
-settings = get_settings()
+
 
 async def lifespan(app : FastAPI):
 
-    redis_client = RedisClient(redis_url = settings.redis_url, cache_ttl = settings.cache_ttl, task_ttl = settings.task_ttl)
+    
+    await redis_client.redis.ping()
+    print("Redis подключен")
+
+      
+    await rabbit_client.connect()
+    print("Rabbit подключен")
+
       
     yield 
 
     await redis_client.close()
-    
+    print("Raddis отключен")
+    await rabbit_client.close()
+    print("Rabbit отключен")
 
-#engine - движок, который отправляет сырые sql запросы в бд
-# Base.metadata сохраняет всю информацию о таблицах 
-# create_all создает все эти таблицы в бд       
+
+    
 
 app = FastAPI(lifespan = lifespan)
 
-async def get_redis() -> RedisClient:
-
-    return redis_client
+app.include_router(prediction_router)
 
 

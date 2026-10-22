@@ -22,3 +22,5 @@ def get_settings() -> Settings:
         task_ttl = os.getenv("TASK_TTL"),
         rabbit_url = os.getenv("RABBITMQ_URL")
     )
+
+settings = get_settings()
