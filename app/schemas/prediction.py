@@ -27,6 +27,10 @@ class PredictionRequest(BaseModel):
 class PredictionResponse(BaseResponse): # Наследуем task_id отсюда
     status: Literal["pending", "processing", "done", "failed"]
     cached: bool
+    sentiment: Optional[str] = None
+    confidence: Optional[float] = None
+    is_toxic: Optional[bool] = None
+    created_at: Optional[datetime] = None
 
 
 
