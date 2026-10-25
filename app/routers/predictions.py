@@ -1,10 +1,11 @@
 from fastapi import APIRouter, status, Depends, HTTPException
-from app.schemas.prediction import PredictionRequest, PredictionResponse  
+from app.schemas.prediction import PredictionRequest, PredictionResponse, TaskResponse, PredictionResult, HealthResponse  
 from app.redis.client import RedisClient, get_redis
 from rabbit import RabbitMQ, get_rabbit
 import hashlib
-from uuid import uuid4
+from uuid import uuid4, UUID
 from datetime import datetime, timezone
+
 
 
 def create_hash(data : str) -> str:
@@ -75,6 +76,51 @@ async def predict(request : PredictionRequest,
         result["error_message"] = str(e)
         await redis.set_task(str(task_id), result)
         raise HTTPException(status_code=500, detail="Failed to queue prediction task")
+ 
+@prediction_router.get("/tasks/{task_id}", status_code = status.HTTP_200_OK)
+async def get_task(task_id : UUID, redis : RedisClient = Depends(get_redis)) -> TaskResponse:
 
+    result = await redis.get_task(str(task_id))
 
+    if not result:
+
+        raise HTTPException(status_code = 404, detail = "Task not found")
     
+    return TaskResponse(**result)
+                        
+
+@prediction_router.get("/predict/fast", status_code = status.HTTP_200_OK)
+async def fast_predict(text : str, redis : RedisClient = Depends(get_redis)) -> PredictionResult:
+
+    if len(text) < 5:
+        raise HTTPException(status_code=422, detail="Text must be at least 5 characters")
+    
+    text_hash = create_hash(data = text)
+    result = await redis.get_cache(text_hash = text_hash)
+
+    if not result:
+        raise HTTPException(status_code=404, detail="Prediction not found in cache")
+    
+    return PredictionResult(**result)
+
+
+@prediction_router.get("/health", status_code = status.HTTP_200_OK, tags = ["health"])
+async def get_health(redis : RedisClient = Depends(get_redis), rabbit : RabbitMQ = Depends(get_rabbit)) -> HealthResponse:
+    
+    try:
+        await redis.redis.ping()
+        redis_connect = True
+    except Exception:
+        redis_connect = False 
+
+    rabbit_connect = rabbit.connection is not None and not rabbit.connection.is_closed
+
+    health_status = "ok" if redis_connect and rabbit_connect else "degraded"
+
+    return HealthResponse(
+        status = health_status,
+        redis = redis_connect,
+        rabbit = rabbit_connect
+    )
+
+

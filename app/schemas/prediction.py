@@ -42,6 +42,7 @@ class TaskResponse(BaseModel):
     is_toxic: Optional[bool] = None
     created_at: datetime # Pydantic сам сконвертирует это в строку при ответе
     completed_at: Optional[datetime] = None
+    error_message : Optional[str] = None 
 
 
 
@@ -50,3 +51,11 @@ class PredictionResult(BaseModel):
     confidence: float
     is_toxic: bool
     created_at: datetime
+
+
+class HealthResponse(BaseModel):
+    status : Literal["ok", "degraded"]
+    redis : bool
+    rabbit : bool 
+
+

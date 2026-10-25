@@ -20,23 +20,23 @@ class RabbitMQ:
         self.channel = await self.connection.channel()       
 
         self.exchange = await self.channel.declare_exchange(
-            name = settings.RABBIT_EXCHANGE,
+            name = settings.rabbit_exchange,
             type = aio_pika.ExchangeType.DIRECT,
             durable = True
         )
 
         queue_new = await self.channel.declare_queue(
-            name = settings.RABBIT_QUEUE_NEW,
+            name = settings.rabbit_queue_new,
             durable = True
         )
 
         queue_done = await self.channel.declare_queue(
-            name = settings.RABBIT_QUEUE_DONE,
+            name = settings.rabbit_queue_done,
             durable = True
         )
 
-        await queue_new.bind(self.exchange, routing_key = settings.RABBIT_ROUTING_KEY_NEW)
-        await queue_done.bind(self.exchange, routing_key = settings.RABBIT_ROUTING_KEY_DONE)
+        await queue_new.bind(self.exchange, routing_key = settings.rabbit_routing_key_new)
+        await queue_done.bind(self.exchange, routing_key = settings.rabbit_routing_key_done)
 
         
     
@@ -57,7 +57,7 @@ class RabbitMQ:
 
             )    
 
-            await self.exchange.publish(message, routing_key = settings.RABBIT_ROUTING_KEY_NEW) 
+            await self.exchange.publish(message, routing_key = settings.rabbit_routing_key_new) 
 
             
         except Exception:
@@ -74,7 +74,7 @@ class RabbitMQ:
 
             )    
 
-            await self.exchange.publish(message, routing_key = settings.RABBIT_ROUTING_KEY_DONE) 
+            await self.exchange.publish(message, routing_key = settings.rabbit_routing_key_done) 
 
             
         except Exception:
