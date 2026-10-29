@@ -3,8 +3,6 @@ from datetime import datetime
 from uuid import UUID 
 from typing import Optional, Literal
 
-
-
 class BaseResponse(BaseModel):
     task_id: UUID  # Переименовал в task_id для ясности, как в ТЗ
 

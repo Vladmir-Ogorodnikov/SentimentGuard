@@ -58,24 +58,23 @@ async def predict(request : PredictionRequest,
         "created_at": redis_task["created_at"]
     }
 
+    redis_task["status"] = "processing"
+    await redis.set_task(str(task_id), redis_task)
+
+    # Только потом отправляем в очередь
     try:
         await rabbit.publish_to_classify(message)
-        
-        redis_task["status"] = "processing"
-        await redis.set_task(str(task_id), redis_task)
-        return PredictionResponse(
-            task_id = task_id,
-            status = "processing",
-            cached = False
-
-        )
-
     except Exception as e:
-        result = await redis.get_task(str(task_id))
-        result["status"] = "failed"
-        result["error_message"] = str(e)
-        await redis.set_task(str(task_id), result)
+        redis_task["status"] = "failed"
+        redis_task["error_message"] = str(e)
+        await redis.set_task(str(task_id), redis_task)
         raise HTTPException(status_code=500, detail="Failed to queue prediction task")
+
+    return PredictionResponse(
+        task_id=task_id,
+        status="processing",
+        cached=False
+    )
  
 @prediction_router.get("/tasks/{task_id}", status_code = status.HTTP_200_OK)
 async def get_task(task_id : UUID, redis : RedisClient = Depends(get_redis)) -> TaskResponse:
